@@ -1,0 +1,49 @@
+body {
+  background-color: #eff4fc;
+  margin: 0;
+}
+
+.text {
+  width: 100%;
+  height: 3000px;
+}
+.header {
+  position: fixed;
+  top: 0;
+  z-index: 1;
+  width: 100%;
+  background-color: #9eb7e0;
+}
+
+.header h2 {
+  display: flex;
+  justify-content: center;
+  margin: 0;
+}
+
+.progress-container {
+  width: 100%;
+  height: 10px;
+  background-color: #535de0;
+  overflow: hidden;
+}
+
+/* The progress bar (scroll indicator) */
+.progress-bar {
+  margin: 1px 0;
+  height: 8px;
+  background-image: url("images/cat_rot.svg");
+  background-repeat: repeat-x;
+  background-size: 10px 7px; /* Змінено розміри */
+  width: 0%;
+}
+
+.footer {
+  width: 100%;
+  background-color: #9eb7e0;
+  h2 {
+    display: flex;
+    justify-content: center;
+    margin: 0;
+  }
+}
