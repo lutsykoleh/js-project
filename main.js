@@ -1,16 +1,16 @@
 // Execute when the DOM is fully loaded
-window.onload = function () {
+window.addEventListener("load", () => {
   initScrollProgress();
-  animateBalloon();
+  if (isFirstVisit()) {
+    showInitialAnimation();
+  }
   setupBalloonClick();
   setupCouponClose();
   setupCouponCopy();
-};
+});
 
-// Update scroll progress bar
-window.onscroll = function () {
-  updateScrollProgress();
-};
+// Update scroll progress bar on window scroll
+window.addEventListener("scroll", updateScrollProgress);
 
 // Initialize and update scroll progress bar
 function initScrollProgress() {
@@ -24,22 +24,35 @@ function updateScrollProgress() {
     document.documentElement.scrollHeight -
     document.documentElement.clientHeight;
   const scrolled = (winScroll / height) * 100;
-  document.getElementById("myBar").style.width = scrolled + "%";
+  document.getElementById("myBar").style.width = `${scrolled}%`;
 }
 
-// Animate balloon
-function animateBalloon() {
-  setTimeout(function () {
-    const balloon = document.getElementById("balloon");
-    balloon.classList.add("balloon-fly");
-  }, 500);
+// Check if this is the user's first visit using cookies
+function isFirstVisit() {
+  const firstVisit = document.cookie
+    .split(";")
+    .some((item) => item.trim().startsWith("firstVisit="));
+  if (!firstVisit) {
+    // Set the cookie to expire in one month
+    const expiryDate = new Date();
+    expiryDate.setMonth(expiryDate.getMonth() + 1);
+    document.cookie = `firstVisit=true; expires=${expiryDate.toUTCString()}; path=/`;
+    return true;
+  }
+  return false;
+}
+
+// Show the initial animation
+function showInitialAnimation() {
+  const balloon = document.getElementById("balloon");
+  balloon.classList.add("balloon-fly");
 }
 
 // Setup balloon click event
 function setupBalloonClick() {
   const balloon = document.getElementById("balloon");
-  balloon.addEventListener("click", function () {
-    this.style.display = "none";
+  balloon.addEventListener("click", () => {
+    balloon.style.display = "none";
     showCoupon();
   });
 }
@@ -69,7 +82,7 @@ function showCoupon() {
 // Setup coupon close button
 function setupCouponClose() {
   const closeButton = document.getElementById("closeCoupon");
-  closeButton.addEventListener("click", function () {
+  closeButton.addEventListener("click", () => {
     document.getElementById("coupon").style.display = "none";
   });
 }
@@ -77,20 +90,21 @@ function setupCouponClose() {
 // Setup coupon code copy functionality
 function setupCouponCopy() {
   const codeElement = document.getElementById("code");
-  codeElement.addEventListener("click", function () {
-    const tempInput = document.createElement("input");
-    tempInput.value = this.textContent;
-    document.body.appendChild(tempInput);
-    tempInput.select();
-    document.execCommand("copy");
-    document.body.removeChild(tempInput);
-
-    // Visual feedback
-    this.style.backgroundColor = "#4a90e2";
-    this.style.color = "white";
-    setTimeout(() => {
-      this.style.backgroundColor = "";
-      this.style.color = "";
-    }, 200);
+  codeElement.addEventListener("click", () => {
+    const textToCopy = codeElement.textContent;
+    navigator.clipboard
+      .writeText(textToCopy)
+      .then(() => {
+        // Visual feedback
+        codeElement.style.backgroundColor = "#4a90e2";
+        codeElement.style.color = "white";
+        setTimeout(() => {
+          codeElement.style.backgroundColor = "";
+          codeElement.style.color = "";
+        }, 200);
+      })
+      .catch((err) => {
+        console.error("Failed to copy text: ", err);
+      });
   });
 }
