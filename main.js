@@ -1,30 +1,35 @@
-// Execute when the DOM is fully loaded
-window.addEventListener("load", () => {
-  initScrollProgress();
+// Execute code after DOM is fully loaded
+document.addEventListener("DOMContentLoaded", () => {
+  const myBar = document.getElementById("myBar");
+  const balloon = document.getElementById("balloon");
+  const coupon = document.getElementById("coupon");
+  const closeButton = document.getElementById("closeCoupon");
+  const codeElement = document.getElementById("code");
+
+  initScrollProgress(myBar);
   if (isFirstVisit()) {
-    showInitialAnimation();
+    showInitialAnimation(balloon);
   }
-  setupBalloonClick();
-  setupCouponClose();
-  setupCouponCopy();
+  setupBalloonClick(balloon, coupon);
+  setupCouponClose(coupon, closeButton);
+  setupCouponCopy(codeElement);
 });
 
-// Update scroll progress bar on window scroll
-window.addEventListener("scroll", updateScrollProgress);
-
-// Initialize and update scroll progress bar
-function initScrollProgress() {
-  updateScrollProgress();
+// Initialize scroll progress bar
+function initScrollProgress(progressBar) {
+  updateScrollProgress(progressBar);
+  window.addEventListener("scroll", () => updateScrollProgress(progressBar));
 }
 
-function updateScrollProgress() {
+// Update scroll progress based on window scroll position
+function updateScrollProgress(progressBar) {
   const winScroll =
     document.body.scrollTop || document.documentElement.scrollTop;
   const height =
     document.documentElement.scrollHeight -
     document.documentElement.clientHeight;
   const scrolled = (winScroll / height) * 100;
-  document.getElementById("myBar").style.width = `${scrolled}%`;
+  progressBar.style.width = `${scrolled}%`;
 }
 
 // Check if this is the user's first visit using cookies
@@ -33,33 +38,35 @@ function isFirstVisit() {
     .split(";")
     .some((item) => item.trim().startsWith("firstVisit="));
   if (!firstVisit) {
-    // Set the cookie to expire in one month
-    const expiryDate = new Date();
-    expiryDate.setMonth(expiryDate.getMonth() + 1);
-    document.cookie = `firstVisit=true; expires=${expiryDate.toUTCString()}; path=/`;
+    setCookie("firstVisit", "true", 30);
     return true;
   }
   return false;
 }
 
-// Show the initial animation
-function showInitialAnimation() {
-  const balloon = document.getElementById("balloon");
+// Function to set a cookie
+function setCookie(name, value, days) {
+  const expiryDate = new Date();
+  expiryDate.setTime(expiryDate.getTime() + days * 24 * 60 * 60 * 1000);
+  const expires = "expires=" + expiryDate.toUTCString();
+  document.cookie = `${name}=${value}; ${expires}; path=/`;
+}
+
+// Show the initial balloon animation
+function showInitialAnimation(balloon) {
   balloon.classList.add("balloon-fly");
 }
 
-// Setup balloon click event
-function setupBalloonClick() {
-  const balloon = document.getElementById("balloon");
+// Set up balloon click event to hide balloon and show coupon
+function setupBalloonClick(balloon, coupon) {
   balloon.addEventListener("click", () => {
     balloon.style.display = "none";
-    showCoupon();
+    showCoupon(coupon);
   });
 }
 
-// Show coupon
-function showCoupon() {
-  const coupon = document.getElementById("coupon");
+// Show coupon with random discount and code
+function showCoupon(coupon) {
   const discountElement = document.getElementById("discount");
   const codeElement = document.getElementById("code");
 
@@ -71,36 +78,30 @@ function showCoupon() {
 
   coupon.style.display = "block";
 
-  // Ensure the coupon is rendered before adding the animation class
+  // Add animation after coupon is displayed
   requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      coupon.classList.add("coupon-fall");
-    });
+    coupon.classList.add("coupon-fall");
   });
 }
 
-// Setup coupon close button
-function setupCouponClose() {
-  const closeButton = document.getElementById("closeCoupon");
+// Set up event for closing the coupon
+function setupCouponClose(coupon, closeButton) {
   closeButton.addEventListener("click", () => {
-    document.getElementById("coupon").style.display = "none";
+    coupon.style.display = "none";
   });
 }
 
-// Setup coupon code copy functionality
-function setupCouponCopy() {
-  const codeElement = document.getElementById("code");
+// Set up coupon code copy functionality
+function setupCouponCopy(codeElement) {
   codeElement.addEventListener("click", () => {
     const textToCopy = codeElement.textContent;
     navigator.clipboard
       .writeText(textToCopy)
       .then(() => {
-        // Visual feedback
-        codeElement.style.backgroundColor = "#4a90e2";
-        codeElement.style.color = "white";
+        // Visual feedback on successful copy
+        codeElement.classList.add("copied");
         setTimeout(() => {
-          codeElement.style.backgroundColor = "";
-          codeElement.style.color = "";
+          codeElement.classList.remove("copied");
         }, 200);
       })
       .catch((err) => {
